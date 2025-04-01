@@ -13,22 +13,14 @@
           <label for="rating-poor">Poor</label>
         </div>
         <div class="form-control">
-          <input
-            type="radio"
-            id="rating-average"
-            value="average"
-            name="rating"
-            v-model="chosenRating"
-          />
+          <input type="radio" id="rating-average" value="average" name="rating" v-model="chosenRating" />
           <label for="rating-average">Average</label>
         </div>
         <div class="form-control">
           <input type="radio" id="rating-great" value="great" name="rating" v-model="chosenRating" />
           <label for="rating-great">Great</label>
         </div>
-        <p
-          v-if="invalidInput"
-        >One or more input fields are invalid. Please check your provided data.</p>
+        <p v-if="invalidInput">One or more input fields are invalid. Please check your provided data.</p>
         <div>
           <base-button>Submit</base-button>
         </div>
@@ -38,6 +30,7 @@
 </template>
 
 <script>
+import { supabase } from '@/supabase';
 export default {
   data() {
     return {
@@ -46,20 +39,26 @@ export default {
       invalidInput: false,
     };
   },
-  emits: ['survey-submit'],
+  // emits: ['survey-submit'],
+  // emits: ['survey-submit'],
   methods: {
-    submitSurvey() {
+    async submitSurvey() {
       if (this.enteredName === '' || !this.chosenRating) {
         this.invalidInput = true;
         return;
       }
       this.invalidInput = false;
 
-      this.$emit('survey-submit', {
-        userName: this.enteredName,
-        rating: this.chosenRating,
-      });
+      const { error } = await supabase
+        .from('surveys')
+        .insert([
+          {
+            name: this.enteredName,
+            rating: this.chosenRating,
+          },
+        ]);
 
+      // Clear inputs after successful submission
       this.enteredName = '';
       this.chosenRating = null;
     },
