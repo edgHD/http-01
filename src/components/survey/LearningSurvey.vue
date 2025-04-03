@@ -40,7 +40,6 @@ export default {
     };
   },
   // emits: ['survey-submit'],
-  // emits: ['survey-submit'],
   methods: {
     async submitSurvey() {
       if (this.enteredName === '' || !this.chosenRating) {
@@ -57,6 +56,13 @@ export default {
             rating: this.chosenRating,
           },
         ]);
+
+      if (error) {
+        console.error('Error submitting survey:', error);
+        return;
+      } else {
+        console.log('Survey submitted successfully');
+      }
 
       // Clear inputs after successful submission
       this.enteredName = '';
