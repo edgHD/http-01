@@ -21,6 +21,7 @@
           <label for="rating-great">Great</label>
         </div>
         <p v-if="invalidInput">One or more input fields are invalid. Please check your provided data.</p>
+        <p v-if="errorLog" class="error-log">{{ errorLog }}</p>
         <div>
           <base-button>Submit</base-button>
         </div>
@@ -37,18 +38,23 @@ export default {
       enteredName: '',
       chosenRating: null,
       invalidInput: false,
+      errorLog: null,
     };
   },
-  // emits: ['survey-submit'],
   methods: {
     async submitSurvey() {
+      // Reset error states before submission
+      this.invalidInput = false;
+      this.errorLog = null;
+
+      // Validate required fields
       if (this.enteredName === '' || !this.chosenRating) {
         this.invalidInput = true;
         return;
       }
-      this.invalidInput = false;
 
-      const { error } = await supabase
+      // Submit survey data to Supabase database
+      const { error, status } = await supabase
         .from('surveys')
         .insert([
           {
@@ -57,14 +63,20 @@ export default {
           },
         ]);
 
+      // Handle potential submission errors
       if (error) {
         console.error('Error submitting survey:', error);
+        if (status === 400) {
+          this.errorLog = 'Bad Request [400]';
+        } else {
+          this.errorLog = 'Error submitting survey, please try again later.';
+        }
         return;
-      } else {
-        console.log('Survey submitted successfully');
       }
 
-      // Clear inputs after successful submission
+      console.log('Survey submitted successfully');
+
+      // Reset form fields after successful submission
       this.enteredName = '';
       this.chosenRating = null;
     },
